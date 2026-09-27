@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한글 수선소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Jua&family=Gasoek+One&family=Bagel+Fat+One&family=Gugi&family=Sunflower:wght@300;500;700&family=Dongle:wght@300;400;700&family=Noto+Sans+KR:wght@300;400;500;700;900&family=Nanum+Gothic:wght@400;700;800&family=IBM+Plex+Sans+KR:wght@300;400;500;700&family=Gowun+Dodum&family=Noto+Serif+KR:wght@400;700;900&family=Nanum+Myeongjo:wght@400;700;800&family=Gowun+Batang&family=Hahmlet:wght@300;400;700;900&family=Song+Myung&family=Nanum+Brush+Script&family=East+Sea+Dokdo&family=Yeon+Sung&family=Nanum+Pen+Script&family=Gaegu:wght@300;400;700&family=Hi+Melody&family=Poor+Story&family=Single+Day&family=Cute+Font&family=Gamja+Flower&family=Dokdo&family=Stylish&family=Gothic+A1:wght@400;500;700;800;900&family=Orbit&family=Black+And+White+Picture&family=Kirang+Haerang&family=Moirai+One&family=Diphylleia&family=Grandiflora+One&display=swap">
+<style>
+:root{
+  --paper:#F1F7F2; --surface:#FFFFFF; --ink:#1D3325; --ink-soft:#5A6F61;
+  --mint:#E6F2E8; --green:#386A43; --on-green:#FFFFFF; --line:#CFE0D3;
+  --mark:#E0B53A; --stage:#E9F0EA; --check:#DDE7DF; --danger:#A94A36;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#111913; --surface:#18221B; --ink:#E3EEE6; --ink-soft:#9BB1A2;
+    --mint:#22362A; --green:#8FC99D; --on-green:#0F1A12; --line:#2C4033;
+    --stage:#0D140F; --check:#152019; --danger:#E08A74; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111913; --surface:#18221B; --ink:#E3EEE6; --ink-soft:#9BB1A2;
+  --mint:#22362A; --green:#8FC99D; --on-green:#0F1A12; --line:#2C4033;
+  --stage:#0D140F; --check:#152019; --danger:#E08A74; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100%;background:var(--paper);color:var(--ink);display:flex;flex-direction:column;font-size:15px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+
+/* header */
+.top{display:flex;align-items:center;gap:16px;padding:14px 18px 12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none}
+.brand svg{width:38px;height:38px;flex:none}
+.brand b{font-family:"Jua","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:22px;color:var(--green);letter-spacing:.01em}
+.titleblock{border-left:1px solid var(--line);padding-left:16px}
+.titleblock h1{margin:0;font-family:"Do Hyeon","IBM Plex Sans KR",sans-serif;font-weight:400;font-size:26px;line-height:1.1}
+.titleblock p{margin:2px 0 0;color:var(--ink-soft);font-size:13px}
+.actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;font-size:14px;display:inline-flex;align-items:center;gap:6px;min-height:40px}
+.btn:hover:not(:disabled){border-color:var(--green)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--on-green);font-weight:700}
+.btn svg{width:18px;height:18px}
+
+/* layout */
+.app{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding:0 12px 12px}
+.tools{display:flex;gap:6px;overflow-x:auto}
+.tool{flex:1 0 auto;min-width:72px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px}
+.tool svg{width:22px;height:22px}
+.tool[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:var(--on-green)}
+.work{display:flex;flex-direction:column;min-width:0;min-height:0}
+.hint{font-size:13.5px;color:var(--ink-soft);padding:0 2px 8px;min-height:30px}
+.hint.pick{color:var(--green);font-weight:700}
+.stage{position:relative;height:58vh;min-height:300px;overflow:auto;display:flex;border-radius:18px;border:1px solid var(--line);
+  background-color:var(--stage);
+  background-image:linear-gradient(45deg,var(--check) 25%,transparent 25%),linear-gradient(-45deg,var(--check) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,var(--check) 75%),linear-gradient(-45deg,transparent 75%,var(--check) 75%);
+  background-size:18px 18px;background-position:0 0,0 9px,9px -9px,-9px 0}
+.stage.drop{outline:3px dashed var(--green);outline-offset:-8px}
+#view{margin:auto;flex:none;touch-action:none;display:block;box-shadow:0 1px 0 var(--line),0 8px 24px rgba(20,40,25,.12)}
+#view.crosshair{cursor:crosshair}
+#view.moving{cursor:move}
+.empty{margin:auto;max-width:440px;text-align:center;padding:28px 20px}
+.empty h2{font-family:"Do Hyeon",sans-serif;font-weight:400;font-size:28px;margin:0 0 6px}
+.empty p{margin:0 0 16px;color:var(--ink-soft)}
+.steps{list-style:none;padding:0;margin:22px 0 0;text-align:left;display:grid;gap:8px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;align-items:baseline;font-size:14px}
+.steps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--mint);color:var(--green);font-weight:700;font-size:12px;display:grid;place-items:center}
+.stagebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:10px;font-size:13.5px}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom .btn{min-height:34px;padding:4px 10px}
+.zoom output{min-width:52px;text-align:center;font-variant-numeric:tabular-nums}
+.cmp{display:flex;align-items:center;gap:8px;margin-left:auto;flex-wrap:wrap}
+.switch{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.switch input{accent-color:var(--green);width:18px;height:18px}
+input[type=range]{accent-color:var(--green)}
+
+/* panel */
+.panel{display:flex;flex-direction:column;gap:12px;min-height:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h3{margin:0 0 10px;font-size:15px}
+.card p.note{margin:0;color:var(--ink-soft);font-size:13.5px}
+.row{display:grid;grid-template-columns:78px 1fr 52px;align-items:center;gap:8px;font-size:13.5px;margin:6px 0}
+.row output{text-align:right;color:var(--ink-soft);font-variant-numeric:tabular-nums;font-size:12.5px}
+.row input[type=range]{width:100%}
+.colorrow{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13.5px;flex-wrap:wrap}
+.colorrow span.l{width:78px}
+.colorrow input[type=color]{width:40px;height:32px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--surface)}
+.colorrow code{font-size:12px;color:var(--ink-soft)}
+.mini{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:4px 9px;font-size:12.5px;display:inline-flex;align-items:center;gap:4px;min-height:32px}
+.mini.on{border-color:var(--green);color:var(--green);font-weight:700}
+.mini svg{width:15px;height:15px}
+textarea{width:100%;min-height:62px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--paper);font-size:16px;resize:vertical}
+select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:var(--surface)}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin:10px 0 8px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:3px 10px;font-size:12.5px}
+.chip[aria-pressed="true"]{background:var(--mint);border-color:var(--green);color:var(--green);font-weight:700}
+.fontlist{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:280px;overflow:auto;padding:2px}
+.font-item{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:6px 8px;text-align:left;display:flex;flex-direction:column;min-width:0}
+.font-item .pv{font-size:21px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.font-item .nm{font-size:11px;color:var(--ink-soft);font-family:"IBM Plex Sans KR",sans-serif}
+.font-item[aria-pressed="true"]{border-color:var(--green);box-shadow:inset 0 0 0 1px var(--green);background:var(--mint)}
+.fi{position:relative;min-width:0}
+.fi .font-item{width:100%;padding-right:26px}
+.star{position:absolute;top:4px;right:4px;width:24px;height:24px;border:0;background:transparent;color:var(--ink-soft);font-size:15px;line-height:1;border-radius:6px}
+.star.on{color:#D9A21B}
+.star:hover{background:var(--mint)}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.preset{border:1px solid var(--line);background:var(--paper);border-radius:999px 999px 999px 999px/60% 60% 60% 60%;padding:8px 4px;font-size:16px;min-height:44px}
+.preset:hover{border-color:var(--green);background:var(--mint)}
+details{margin-top:6px;border-top:1px solid var(--line);padding-top:8px}
+summary{cursor:pointer;font-size:13.5px;font-weight:700;padding:4px 0}
+.btnrow{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.btnrow .mini.danger{color:var(--danger)}
+.radios{display:grid;gap:6px;font-size:14px}
+.radios label{display:flex;gap:8px;align-items:center}
+.radios input{accent-color:var(--green)}
+.layers{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.layers button{width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 9px;font-size:13px;display:flex;gap:8px;align-items:center}
+.layers button[aria-pressed="true"]{border-color:var(--green);background:var(--mint)}
+.layers .tag{font-size:11px;color:var(--ink-soft);flex:none}
+.layers .tx{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+footer{text-align:center;font-size:12px;color:var(--ink-soft);padding:6px 0 12px;letter-spacing:.02em}
+footer b{color:var(--green);font-weight:700}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal{position:fixed;inset:0;background:rgba(10,20,12,.55);display:grid;place-items:center;padding:20px;z-index:30}
+.modal[hidden]{display:none}
+.modal .box{background:var(--surface);border-radius:16px;padding:18px;max-width:560px;width:100%;max-height:90%;overflow:auto}
+.modal img{max-width:100%;border-radius:8px;display:block;margin:10px 0}
+
+@media (min-width:960px){
+  body{height:100%}
+  .app{display:grid;grid-template-columns:84px minmax(0,1fr) 340px;padding:0 18px 12px}
+  .tools{flex-direction:column;overflow:visible}
+  .tool{flex:none;min-width:0}
+  .stage{flex:1;height:auto;min-height:0}
+  .panel{overflow:auto;padding-right:2px}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand" aria-label="Minty.E">
+    <svg viewBox="0 0 40 40" aria-hidden="true">
+      <g transform="translate(20 20)">
+        <ellipse rx="6.5" ry="10" cy="-9" fill="#E6F2E8" stroke="#386A43" stroke-width=".9"/>
+        <ellipse rx="6.5" ry="10" cy="-9" fill="#E6F2E8" stroke="#386A43" stroke-width=".9" transform="rotate(72)"/>
+        <ellipse rx="6.5" ry="10" cy="-9" fill="#E6F2E8" stroke="#386A43" stroke-width=".9" transform="rotate(144)"/>
+        <ellipse rx="6.5" ry="10" cy="-9" fill="#E6F2E8" stroke="#386A43" stroke-width=".9" transform="rotate(216)"/>
+        <ellipse rx="6.5" ry="10" cy="-9" fill="#E6F2E8" stroke="#386A43" stroke-width=".9" transform="rotate(288)"/>
+        <circle r="4" fill="#386A43"/>
+      </g>
+    </svg>
+    <b>Minty.E</b>
+  </div>
+  <div class="titleblock">
+    <h1>한글 수선소</h1>
+    <p>AI 이미지 속 한글 오타만 골라 고쳐요</p>
+  </div>
+  <div class="actions">
+    <button class="btn" id="btnNew" type="button">새 이미지</button>
+    <button class="btn" id="btnUndo" type="button" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>되돌리기</button>
+    <button class="btn primary" id="btnSave" type="button" disabled>PNG로 저장</button>
+  </div>
+</header>
+
+<main class="app">
+  <nav class="tools" aria-label="도구">
+    <button class="tool" data-tool="move" type="button" aria-pressed="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>옮기기</button>
+    <button class="tool" data-tool="erase" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4-4a2 2 0 0 1 0-2.8L13.2 4a2 2 0 0 1 2.8 0l4 4a2 2 0 0 1 0 2.8L10 21z"/><path d="M8.5 8.5l7 7M7 21h14"/></svg>지우기</button>
+    <button class="tool" data-tool="stamp" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="11" height="11" rx="1.5" stroke-dasharray="3 2"/><rect x="10" y="10" width="11" height="11" rx="1.5"/></svg>글자 복사</button>
+    <button class="tool" data-tool="text" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14M12 5v15M9 20h6"/></svg>글자 쓰기</button>
+  </nav>
+
+  <section class="work">
+    <div class="hint" id="hint" aria-live="polite">이미지를 올리면 시작해요.</div>
+    <div class="stage" id="stage">
+      <div class="empty" id="empty">
+        <h2>고칠 이미지를 올려주세요</h2>
+        <p>여기로 끌어다 놓거나, Ctrl+V로 붙여넣어도 돼요.</p>
+        <button class="btn primary" id="btnPick" type="button">이미지 고르기</button>
+        <ol class="steps">
+          <li><span><b>지우기</b>로 틀린 글자를 네모로 감싸 배경으로 메워요.</span></li>
+          <li><span><b>글자 복사</b>로 같은 이미지 속 글자·자모를 옮겨 붙이거나, <b>글자 쓰기</b>로 새로 써요.</span></li>
+          <li><span><b>원본 겹쳐보기</b>를 켜고 폰트·크기·위치를 맞춘 뒤 저장해요.</span></li>
+        </ol>
+      </div>
+      <canvas id="view" hidden></canvas>
+    </div>
+    <div class="stagebar" id="stagebar" hidden>
+      <div class="zoom">
+        <button class="btn" id="zOut" type="button" aria-label="축소">−</button>
+        <output id="zVal">100%</output>
+        <button class="btn" id="zIn" type="button" aria-label="확대">+</button>
+        <button class="btn" id="zFit" type="button">화면 맞춤</button>
+      </div>
+      <div class="cmp">
+        <label class="switch"><input type="checkbox" id="cmpOn"> 원본 겹쳐보기</label>
+        <input type="range" id="cmpOp" min="10" max="90" value="45" aria-label="원본 진하기" hidden>
+        <button class="btn" id="peek" type="button">누르는 동안 원본</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="panel" id="panel" aria-label="설정"></aside>
+</main>
+
+<footer>made in <b>Minty Lab</b></footer>
+
+<input type="file" id="file" accept="image/*" hidden>
+<input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal" id="modal" hidden>
+  <div class="box">
+    <h3 style="margin:0">완성 이미지</h3>
+    <p class="note" style="margin:6px 0 0;color:var(--ink-soft);font-size:14px">이미지를 길게 누르거나 오른쪽 클릭해서 저장하세요.</p>
+    <img id="modalImg" alt="수정한 이미지">
+    <div class="btnrow"><a class="btn primary" id="modalDl" download="수선본.png">파일로 내려받기</a><button class="btn" id="modalClose" type="button">닫기</button></div>
+  </div>
+</div>
+
+<script>
+(() => {
+const FONTS = [
+  ['Nanum Gothic','talk'],['Noto Sans KR','talk'],['Gothic A1','talk'],['IBM Plex Sans KR','talk'],['Gowun Dodum','talk'],['Sunflower','talk'],['Jua','talk'],['Do Hyeon','talk'],['Dongle','talk'],['Orbit','talk'],
+  ['Black Han Sans','sfx'],['Gasoek One','sfx'],['Bagel Fat One','sfx'],['Gugi','sfx'],['Black And White Picture','sfx'],['Kirang Haerang','sfx'],['East Sea Dokdo','sfx'],['Dokdo','sfx'],['Moirai One','sfx'],
+  ['Nanum Pen Script','hand'],['Gaegu','hand'],['Hi Melody','hand'],['Poor Story','hand'],['Single Day','hand'],['Cute Font','hand'],['Gamja Flower','hand'],['Stylish','hand'],['Yeon Sung','hand'],
+  ['Nanum Myeongjo','hist'],['Noto Serif KR','hist'],['Gowun Batang','hist'],['Hahmlet','hist'],['Song Myung','hist'],['Nanum Brush Script','hist'],['Diphylleia','hist'],['Grandiflora One','hist']
+];
+const CATS = [['all','전체'],['fav','★ 즐겨찾기'],['talk','대사'],['sfx','외침·효과음'],['hand','손글씨·속마음'],['hist','사극·나레이션'],['mine','내 폰트']];
+const PRESETS = [
+  {n:'일반 대사', f:'Nanum Gothic', s:{family:'Nanum Gothic',weight:800,color:'#111111',stroke:0,skew:0,ls:-3,sx:1,rot:0,shBlur:0,shX:0,shY:0}, k:1},
+  {n:'외침', f:'Black Han Sans', s:{family:'Black Han Sans',weight:400,color:'#111111',stroke:0,skew:-10,ls:0,sx:1,rot:0,shBlur:0,shX:0,shY:0}, k:1.4},
+  {n:'속마음', f:'Nanum Pen Script', s:{family:'Nanum Pen Script',weight:400,color:'#444444',stroke:0,skew:0,ls:0,sx:1,rot:0,shBlur:0,shX:0,shY:0}, k:1.15},
+  {n:'나레이션', f:'Nanum Myeongjo', s:{family:'Nanum Myeongjo',weight:700,color:'#222222',stroke:0,skew:0,ls:-2,sx:1,rot:0,shBlur:0,shX:0,shY:0}, k:.95},
+  {n:'사극 대사', f:'Gowun Batang', s:{family:'Gowun Batang',weight:700,color:'#1a1a1a',stroke:0,skew:0,ls:-2,sx:1,rot:0,shBlur:0,shX:0,shY:0}, k:1},
+  {n:'효과음', f:'Gasoek One', s:{family:'Gasoek One',weight:400,color:'#D8342B',strokeColor:'#ffffff',skew:-12,ls:0,sx:1,rot:-8,shBlur:0,shX:3,shY:3,shColor:'#111111'}, k:2, stroke:.09}
+];
+const MINE = [];
+let FAV = new Set(); try{ FAV=new Set(JSON.parse(localStorage.getItem('hs-fav')||'[]')) }catch(e){}
+function saveFav(){ try{ localStorage.setItem('hs-fav',JSON.stringify([...FAV])) }catch(e){} }
+const HINTS = {
+  move:'글자 상자를 끌어 옮기세요. 모서리 점은 크기, 위쪽 점은 회전이에요. 방향키로 1px씩 움직여요.',
+  erase:'틀린 글자를 네모로 감싸면 주변 배경으로 메워져요. 여러 번 나눠 지워도 돼요.',
+  stamp:'이미지 속 다른 곳에 있는 같은 글자나 자모를 네모로 감싸세요. 복사본이 옆에 생겨요.',
+  text:'말풍선 안, 글자를 넣을 자리를 누르세요.'
+};
+const COARSE = matchMedia('(pointer:coarse)').matches;
+if(COARSE) HINTS.move='글자 상자를 끌어 옮기세요. 모서리 점은 크기, 위쪽 점은 회전이에요. 빈 곳을 끌면 화면이 움직여요.';
+const PCT = new Set(['sx','sy','scale','opacity']);
+const CUR_CAT_DEFAULT='talk';
+const $ = s => document.querySelector(s);
+const view = $('#view'), vctx = view.getContext('2d');
+const work = document.createElement('canvas'), wctx = work.getContext('2d',{willReadFrequently:true});
+const orig = document.createElement('canvas'), octx = orig.getContext('2d');
+const meas = document.createElement('canvas').getContext('2d');
+const panel = $('#panel'), stage = $('#stage');
+
+const S = {
+  loaded:false, name:'image', tool:'move', layers:[], sel:null, scale:1, undo:[],
+  cmp:false, cmpOp:.45, peek:false, pick:null, drag:null, cat:'talk', nextId:1,
+  fill:{mode:'auto', color:'#ffffff'},
+  lastText:{family:'Nanum Gothic', weight:800, skew:0, size:48, sx:1, ls:-3, lh:125, rot:0, color:'#111111',
+    stroke:0, strokeColor:'#ffffff', shBlur:0, shX:0, shY:0, shColor:'#000000', opacity:1}
+};
+
+/* ---------- downloads capability ---------- */
+let dl = null;
+try{ if(window.claude && typeof window.claude.use === 'function'){ window.claude.use('downloads').then(d=>{dl=d}).catch(()=>{}); } }catch(e){}
+
+/* ---------- helpers ---------- */
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2200)}
+const hex = (r,g,b)=>'#'+[r,g,b].map(v=>clamp(Math.round(v),0,255).toString(16).padStart(2,'0')).join('');
+let raf=0; function redraw(){ if(!raf) raf=requestAnimationFrame(()=>{raf=0;render()}) }
+function ds(){ const r=view.getBoundingClientRect(); return r.width/view.width || 1 }
+
+/* ---------- loading ---------- */
+function loadFile(file){
+  if(!file || !file.type.startsWith('image/')){ toast('이미지 파일만 올릴 수 있어요.'); return }
+  S.name = (file.name||'image').replace(/\.[^.]+$/,'') || 'image';
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    let w=img.naturalWidth, h=img.naturalHeight; const max=4000;
+    if(Math.max(w,h)>max){ const k=max/Math.max(w,h); w=Math.round(w*k); h=Math.round(h*k) }
+    for(const c of [work,orig,view]){ c.width=w; c.height=h }
+    wctx.drawImage(img,0,0,w,h); octx.drawImage(img,0,0,w,h);
+    URL.revokeObjectURL(url);
+    S.layers=[]; S.sel=null; S.undo=[]; S.loaded=true;
+    S.lastText.size = Math.max(14, Math.round(h/14));
+    $('#empty').hidden=true; view.hidden=false; $('#stagebar').hidden=false;
+    $('#btnSave').disabled=false; updUndo();
+    fit(); setTool('move'); render();
+  };
+  img.onerror = () => toast('이미지를 열 수 없어요. PNG나 JPG로 다시 시도해 주세요.');
+  img.src = url;
+}
+$('#btnPick').onclick = () => $('#file').click();
+$('#btnNew').onclick = () => $('#file').click();
+$('#file').onchange = e => { loadFile(e.target.files[0]); e.target.value='' };
+stage.addEventListener('dragover', e=>{e.preventDefault();stage.classList.add('drop')});
+stage.addEventListener('dragleave', ()=>stage.classList.remove('drop'));
+stage.addEventListener('drop', e=>{e.preventDefault();stage.classList.remove('drop');loadFile(e.dataTransfer.files[0])});
+document.addEventListener('paste', e=>{
+  const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/'));
+  if(it){ e.preventDefault(); loadFile(it.getAsFile()) }
+});
+
+/* ---------- zoom ---------- */
+function setScale(s){ S.scale=clamp(s,.05,8); view.style.width=(view.width*S.scale)+'px'; view.style.height=(view.height*S.scale)+'px'; $('#zVal').textContent=Math.round(S.scale*100)+'%' }
+function fit(){ const r=stage.getBoundingClientRect(); setScale(Math.min((r.width-24)/view.width,(r.height-24)/view.height,4)) }
+$('#zIn').onclick=()=>setScale(S.scale*1.25);
+$('#zOut').onclick=()=>setScale(S.scale/1.25);
+$('#zFit').onclick=fit;
+
+/* ---------- compare ---------- */
+$('#cmpOn').onchange=e=>{S.cmp=e.target.checked;$('#cmpOp').hidden=!S.cmp;redraw()};
+$('#cmpOp').oninput=e=>{S.cmpOp=e.target.value/100;redraw()};
+const peek=$('#peek');
+peek.addEventListener('pointerdown',()=>{S.peek=true;redraw()});
+['pointerup','pointerleave','pointercancel'].forEach(t=>peek.addEventListener(t,()=>{if(S.peek){S.peek=false;redraw()}}));
+
+/* ---------- undo ---------- */
+const layerKey = ls => JSON.stringify(ls.map(l=>({...l,src:0,proc:0})));
+function pushUndo(pixels){
+  const key=layerKey(S.layers), last=S.undo[S.undo.length-1];
+  if(!pixels && last && !last.img && last.key===key) return;
+  S.undo.push({img:pixels?wctx.getImageData(0,0,work.width,work.height):null, layers:S.layers.map(l=>({...l})), sel:S.sel, key});
+  // 픽셀 스냅샷은 메모리를 많이 써서 이미지 크기에 맞춰 개수를 제한
+  const maxPix=clamp(Math.floor(300e6/(work.width*work.height*4)),3,20);
+  let pix=S.undo.filter(u=>u.img).length;
+  while(pix>maxPix){ const i=S.undo.findIndex(u=>u.img); S.undo.splice(0,i+1); pix--; }
+  if(S.undo.length>60) S.undo.splice(0,S.undo.length-60);
+  updUndo();
+}
+function undo(){
+  const u=S.undo.pop(); if(!u) return;
+  if(u.img) wctx.putImageData(u.img,0,0); S.layers=u.layers; S.sel=S.layers.find(l=>l.id===u.sel)?u.sel:null;
+  updUndo(); renderPanel(); redraw();
+}
+function updUndo(){ $('#btnUndo').disabled=!S.undo.length }
+$('#btnUndo').onclick=undo;
+
+/* ---------- tools ---------- */
+function setTool(t){
+  S.tool=t; S.pick=null;
+  document.querySelectorAll('.tool').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));
+  view.className = t==='move' ? 'moving' : 'crosshair';
+  setHint(); renderPanel(); redraw();
+}
+function setHint(){
+  const h=$('#hint');
+  if(!S.loaded){ h.textContent='이미지를 올리면 시작해요.'; h.classList.remove('pick'); return }
+  if(S.pick){ h.textContent='색을 가져올 곳을 이미지에서 누르세요.'; h.classList.add('pick'); view.className='crosshair'; return }
+  h.classList.remove('pick'); h.textContent=HINTS[S.tool];
+}
+document.querySelectorAll('.tool').forEach(b=>b.onclick=()=>{ if(S.loaded) setTool(b.dataset.tool) });
+
+/* ---------- layers ---------- */
+const selL = () => S.layers.find(l=>l.id===S.sel) || null;
+function fontStr(L){ return `${L.weight} ${L.size}px "${L.family}", "Noto Sans KR", sans-serif` }
+function measure(L){
+  meas.font=fontStr(L);
+  const sp=L.size*L.ls/100, lineH=L.size*L.lh/100;
+  const lines=(L.text||' ').split('\n').map(t=>{
+    const chars=[...t]; const widths=chars.map(c=>meas.measureText(c).width);
+    const total=widths.reduce((a,b)=>a+b,0)+sp*Math.max(0,chars.length-1);
+    return {chars,widths,total};
+  });
+  const tw=Math.max(1,...lines.map(l=>l.total));
+  return {lines,tw,th:lines.length*lineH,lineH,sp};
+}
+function box(L){
+  if(L.type==='text'){ const m=measure(L); return {w:m.tw*L.sx, h:m.th} }
+  return {w:L.proc.width*L.scale*L.sx, h:L.proc.height*L.scale*L.sy};
+}
+function drawLayer(ctx,L){
+  ctx.save(); ctx.translate(L.x,L.y); ctx.rotate(L.rot*Math.PI/180); ctx.globalAlpha=L.opacity;
+  if(L.type==='text'){
+    const m=measure(L); ctx.scale(L.sx,1); if(L.skew) ctx.transform(1,0,Math.tan(L.skew*Math.PI/180),1,0,0); ctx.font=fontStr(L); ctx.textBaseline='middle'; ctx.textAlign='left';
+    ctx.lineJoin='round'; ctx.miterLimit=2;
+    let y=-m.th/2+m.lineH/2;
+    const shadow = L.shBlur>0 || L.shX || L.shY;
+    for(const ln of m.lines){
+      let x=-ln.total/2;
+      ln.chars.forEach((c,i)=>{
+        if(shadow){ ctx.shadowColor=L.shColor; ctx.shadowBlur=L.shBlur; ctx.shadowOffsetX=L.shX; ctx.shadowOffsetY=L.shY }
+        if(L.stroke>0){ ctx.strokeStyle=L.strokeColor; ctx.lineWidth=L.stroke*2; ctx.strokeText(c,x,y); ctx.shadowColor='transparent' }
+        ctx.fillStyle=L.color; ctx.fillText(c,x,y); ctx.shadowColor='transparent';
+        x+=ln.widths[i]+m.sp;
+      });
+      y+=m.lineH;
+    }
+  } else {
+    ctx.scale(L.scale*L.sx, L.scale*L.sy);
+    ctx.drawImage(L.proc,-L.proc.width/2,-L.proc.height/2);
+  }
+  ctx.restore();
+}
+function processStamp(L){
+  const s=L.src, c=document.createElement('canvas'); c.width=s.width; c.height=s.height;
+  const cx=c.getContext('2d'); cx.drawImage(s,0,0);
+  if(L.clear && L.tol>0){
+    const d=cx.getImageData(0,0,c.width,c.height), p=d.data, [br,bg,bb]=L.bg, t=L.tol, t2=L.tol*1.6;
+    for(let i=0;i<p.length;i+=4){
+      const dist=Math.hypot(p[i]-br,p[i+1]-bg,p[i+2]-bb);
+      if(dist<t) p[i+3]=0; else if(dist<t2) p[i+3]=p[i+3]*(dist-t)/(t2-t);
+    }
+    cx.putImageData(d,0,0);
+  }
+  L.proc=c;
+}
+function addStamp(r){
+  const src=document.createElement('canvas'); src.width=r.w; src.height=r.h;
+  src.getContext('2d').drawImage(work,r.x,r.y,r.w,r.h,0,0,r.w,r.h);
+  const d=src.getContext('2d').getImageData(0,0,r.w,r.h).data; let s=[0,0,0],n=0;
+  const add=(x,y)=>{const i=(y*r.w+x)*4; s[0]+=d[i];s[1]+=d[i+1];s[2]+=d[i+2];n++};
+  for(let x=0;x<r.w;x++){add(x,0);add(x,r.h-1)} for(let y=1;y<r.h-1;y++){add(0,y);add(r.w-1,y)}
+  pushUndo(false);
+  const L={id:S.nextId++,type:'stamp',src,bg:s.map(v=>v/n),clear:true,tol:45,
+    x:clamp(r.x+r.w*1.5+8,0,work.width), y:r.y+r.h/2, scale:1,sx:1,sy:1,rot:0,opacity:1};
+  processStamp(L);
+  const pd=L.proc.getContext('2d').getImageData(0,0,L.proc.width,L.proc.height).data; let vis=0;
+  for(let i=3;i<pd.length;i+=4) if(pd[i]>40) vis++;
+  if(vis < pd.length/4*0.02){ L.clear=false; processStamp(L) }
+  S.layers.push(L); S.sel=L.id; setTool('move');
+  toast(L.clear?'복사본을 만들었어요. 끌어서 제자리로 옮기세요.':'배경과 글자 색이 비슷해서 배경을 그대로 뒀어요. 필요하면 지우는 정도를 조절하세요.');
+}
+function addText(p){
+  pushUndo(false);
+  const L={id:S.nextId++,type:'text',text:'고칠 글자',...S.lastText,x:p.x,y:p.y};
+  S.layers.push(L); S.sel=L.id; setTool('move'); loadFont(L);
+  setTimeout(()=>{const ta=panel.querySelector('textarea'); if(ta){ta.focus();ta.select()}},30);
+}
+function loadFont(L){ if(document.fonts&&document.fonts.load) document.fonts.load(fontStr(L),L.text||'가').then(redraw).catch(()=>{}) }
+function removeSel(){ const L=selL(); if(!L) return; pushUndo(false); S.layers=S.layers.filter(l=>l!==L); S.sel=null; renderPanel(); redraw() }
+function dupSel(){
+  const L=selL(); if(!L) return; pushUndo(false);
+  const off=Math.max(12,work.width*.02);
+  const N={...L,id:S.nextId++,x:L.x+off,y:L.y+off};
+  S.layers.push(N); S.sel=N.id; renderPanel(); redraw();
+}
+
+/* ---------- erase / inpaint ---------- */
+function inpaint(x0,y0,w,h){
+  const W=work.width,H=work.height,m=3;
+  const ex0=Math.max(0,x0-m), ey0=Math.max(0,y0-m), ex1=Math.min(W,x0+w+m), ey1=Math.min(H,y0+h+m);
+  const ew=ex1-ex0, eh=ey1-ey0, img=wctx.getImageData(ex0,ey0,ew,eh), p=img.data;
+  const at=(x,y)=>((y-ey0)*ew+(x-ex0))*4;
+  const edge=(len,fn)=>{ const a=new Float32Array(len*4); let ok=false;
+    for(let i=0;i<len;i++){ let c=[0,0,0,0],n=0; for(let k=1;k<=m;k++){ const q=fn(i,k); if(q){const j=at(q[0],q[1]);c[0]+=p[j];c[1]+=p[j+1];c[2]+=p[j+2];c[3]+=p[j+3];n++} }
+      if(n){ok=true; for(let t=0;t<4;t++) a[i*4+t]=c[t]/n} }
+    if(!ok) return null;
+    const b=new Float32Array(a.length), R=2;
+    for(let i=0;i<len;i++) for(let t=0;t<4;t++){ let s=0,n=0; for(let k=-R;k<=R;k++){const j=i+k; if(j>=0&&j<len){s+=a[j*4+t];n++}} b[i*4+t]=s/n }
+    return b; };
+  const top=edge(w,(i,k)=>y0-k>=0?[x0+i,y0-k]:null);
+  const bot=edge(w,(i,k)=>y0+h-1+k<H?[x0+i,y0+h-1+k]:null);
+  const lef=edge(h,(j,k)=>x0-k>=0?[x0-k,y0+j]:null);
+  const rig=edge(h,(j,k)=>x0+w-1+k<W?[x0+w-1+k,y0+j]:null);
+  if(!top&&!bot&&!lef&&!rig) return false;
+  for(let j=0;j<h;j++){ for(let i=0;i<w;i++){
+    const u=(i+.5)/w, v=(j+.5)/h; let Hc=null,dh=0,Vc=null,dv=0;
+    if(lef&&rig){ dh=Math.min(u,1-u)*w; Hc=[0,1,2,3].map(t=>lef[j*4+t]*(1-u)+rig[j*4+t]*u) }
+    else if(lef){ dh=u*w; Hc=[0,1,2,3].map(t=>lef[j*4+t]) } else if(rig){ dh=(1-u)*w; Hc=[0,1,2,3].map(t=>rig[j*4+t]) }
+    if(top&&bot){ dv=Math.min(v,1-v)*h; Vc=[0,1,2,3].map(t=>top[i*4+t]*(1-v)+bot[i*4+t]*v) }
+    else if(top){ dv=v*h; Vc=[0,1,2,3].map(t=>top[i*4+t]) } else if(bot){ dv=(1-v)*h; Vc=[0,1,2,3].map(t=>bot[i*4+t]) }
+    let c;
+    if(Hc&&Vc){ const a=1/((dh+1)*(dh+1)), b=1/((dv+1)*(dv+1)); c=Hc.map((x,t)=>(x*a+Vc[t]*b)/(a+b)) } else c=Hc||Vc;
+    const k=at(x0+i,y0+j); p[k]=c[0];p[k+1]=c[1];p[k+2]=c[2];p[k+3]=c[3];
+  }}
+  wctx.putImageData(img,ex0,ey0); return true;
+}
+function doErase(r){
+  pushUndo(true);
+  if(S.fill.mode==='color'){ wctx.fillStyle=S.fill.color; wctx.fillRect(r.x,r.y,r.w,r.h) }
+  else if(!inpaint(r.x,r.y,r.w,r.h)){ wctx.fillStyle=S.fill.color; wctx.fillRect(r.x,r.y,r.w,r.h) }
+}
+
+/* ---------- pointer ---------- */
+function toImg(e){ const r=view.getBoundingClientRect(); return {x:(e.clientX-r.left)*view.width/r.width, y:(e.clientY-r.top)*view.height/r.height} }
+function toLocal(L,p){ const dx=p.x-L.x, dy=p.y-L.y, a=-L.rot*Math.PI/180; return {x:dx*Math.cos(a)-dy*Math.sin(a), y:dx*Math.sin(a)+dy*Math.cos(a)} }
+function handles(L){ const b=box(L), d=ds(); return {w:b.w,h:b.h,rs:{x:b.w/2,y:b.h/2},ro:{x:0,y:-b.h/2-30/d}} }
+function hitLayer(p){
+  const pad=6/ds();
+  for(let i=S.layers.length-1;i>=0;i--){ const L=S.layers[i], b=box(L), q=toLocal(L,p);
+    if(Math.abs(q.x)<=b.w/2+pad && Math.abs(q.y)<=b.h/2+pad) return L }
+  return null;
+}
+function samplePick(p){
+  const x=clamp(Math.floor(p.x),0,work.width-1), y=clamp(Math.floor(p.y),0,work.height-1);
+  const d=wctx.getImageData(x,y,1,1).data; const c=hex(d[0],d[1],d[2]);
+  if(S.pick==='fillColor'){ S.fill.color=c; S.fill.mode='color' }
+  else { const L=selL(); if(L){ L[S.pick]=c; S.lastText[S.pick]=c } }
+  S.pick=null; setHint(); view.className=S.tool==='move'?'moving':'crosshair'; renderPanel(); redraw();
+  toast('색을 가져왔어요 '+c);
+}
+view.addEventListener('pointerdown',e=>{
+  if(!S.loaded) return; e.preventDefault(); view.setPointerCapture(e.pointerId);
+  const p=toImg(e);
+  if(S.pick){ samplePick(p); return }
+  if(S.tool==='move'){
+    const L=selL(); const hr=(COARSE?24:14)/ds();
+    if(L){ const h=handles(L), q=toLocal(L,p);
+      if(Math.hypot(q.x-h.rs.x,q.y-h.rs.y)<hr){ pushUndo(false); S.drag={t:'resize',L,d0:Math.hypot(p.x-L.x,p.y-L.y)||1,size:L.size,scale:L.scale}; return }
+      if(Math.hypot(q.x-h.ro.x,q.y-h.ro.y)<hr){ pushUndo(false); S.drag={t:'rotate',L}; return }
+    }
+    const hit=hitLayer(p);
+    if(hit){ if(S.sel!==hit.id){S.sel=hit.id;renderPanel()} pushUndo(false); S.drag={t:'move',L:hit,ox:p.x-hit.x,oy:p.y-hit.y} }
+    else { if(S.sel!==null){ S.sel=null; renderPanel() } S.drag={t:'pan',cx:e.clientX,cy:e.clientY,sl:stage.scrollLeft,st:stage.scrollTop} }
+    redraw();
+  } else if(S.tool==='erase'||S.tool==='stamp'){
+    S.drag={t:'rect',x0:p.x,y0:p.y,x1:p.x,y1:p.y};
+  } else if(S.tool==='text'){
+    const hit=hitLayer(p);
+    if(hit&&hit.type==='text'){ S.sel=hit.id; setTool('move') } else addText(p);
+  }
+});
+view.addEventListener('pointermove',e=>{
+  const d=S.drag; if(!d) return;
+  if(d.t==='pan'){ stage.scrollLeft=d.sl-(e.clientX-d.cx); stage.scrollTop=d.st-(e.clientY-d.cy); return }
+  const p=toImg(e);
+  if(d.t==='rect'){ d.x1=p.x; d.y1=p.y }
+  else if(d.t==='move'){ d.L.x=p.x-d.ox; d.L.y=p.y-d.oy }
+  else if(d.t==='resize'){ const k=Math.hypot(p.x-d.L.x,p.y-d.L.y)/d.d0;
+    if(d.L.type==='text') d.L.size=Math.max(4,Math.round(d.size*k*2)/2); else d.L.scale=Math.max(.05,d.scale*k) }
+  else if(d.t==='rotate'){ let a=Math.atan2(p.y-d.L.y,p.x-d.L.x)*180/Math.PI+90; if(a>180)a-=360; if(Math.abs(a)<2)a=0; d.L.rot=Math.round(a*2)/2 }
+  redraw();
+});
+function endDrag(){
+  const d=S.drag; S.drag=null; if(!d) return;
+  if(d.t==='rect'){
+    const x=Math.round(clamp(Math.min(d.x0,d.x1),0,work.width)), y=Math.round(clamp(Math.min(d.y0,d.y1),0,work.height));
+    const w=Math.round(clamp(Math.max(d.x0,d.x1),0,work.width))-x, h=Math.round(clamp(Math.max(d.y0,d.y1),0,work.height))-y;
+    if(w>=3&&h>=3){ if(S.tool==='erase') doErase({x,y,w,h}); else addStamp({x,y,w,h}) }
+  } else if(d.L && d.L.type==='text'){ S.lastText.size=d.L.size; S.lastText.rot=d.L.rot; if(d.t==='resize') S.presetBase=null }
+  syncPanel(); redraw();
+}
+view.addEventListener('pointerup',endDrag);
+view.addEventListener('pointercancel',endDrag);
+
+document.addEventListener('keydown',e=>{
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||'');
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!typing){ e.preventDefault(); undo(); return }
+  if(typing||!S.loaded) return;
+  const L=selL();
+  if(L && e.key.startsWith('Arrow')){ e.preventDefault(); const s=e.shiftKey?10:1;
+    if(e.key==='ArrowLeft')L.x-=s; if(e.key==='ArrowRight')L.x+=s; if(e.key==='ArrowUp')L.y-=s; if(e.key==='ArrowDown')L.y+=s; redraw() }
+  else if(L && (e.key==='Delete'||e.key==='Backspace')){ e.preventDefault(); removeSel() }
+  else if(e.key==='Escape'){ if(S.pick){S.pick=null;setHint()} else {S.sel=null;renderPanel();redraw()} }
+});
+
+/* ---------- render ---------- */
+function render(){
+  if(!S.loaded) return;
+  const c=vctx; c.clearRect(0,0,view.width,view.height);
+  c.drawImage(work,0,0);
+  S.layers.forEach(L=>drawLayer(c,L));
+  if(S.peek||S.cmp){ c.save(); c.globalAlpha=S.peek?1:S.cmpOp; c.drawImage(orig,0,0); c.restore() }
+  const d=ds(), lw=1.5/d;
+  const dr=S.drag;
+  if(dr&&dr.t==='rect'){
+    const x=Math.min(dr.x0,dr.x1), y=Math.min(dr.y0,dr.y1), w=Math.abs(dr.x1-dr.x0), h=Math.abs(dr.y1-dr.y0);
+    c.save(); c.fillStyle=S.tool==='erase'?'rgba(224,181,58,.28)':'rgba(56,106,67,.18)'; c.fillRect(x,y,w,h);
+    c.setLineDash([6/d,4/d]); c.lineWidth=lw; c.strokeStyle=S.tool==='erase'?'#B98D14':'#386A43'; c.strokeRect(x,y,w,h); c.restore();
+  }
+  const L=selL();
+  if(L && !S.peek){
+    const h=handles(L);
+    c.save(); c.translate(L.x,L.y); c.rotate(L.rot*Math.PI/180);
+    c.lineWidth=lw; c.setLineDash([6/d,4/d]); c.strokeStyle='#386A43'; c.strokeRect(-h.w/2,-h.h/2,h.w,h.h);
+    c.setLineDash([]); c.beginPath(); c.moveTo(0,-h.h/2); c.lineTo(h.ro.x,h.ro.y); c.stroke();
+    for(const q of [h.rs,h.ro]){ c.beginPath(); c.arc(q.x,q.y,7/d,0,Math.PI*2); c.fillStyle='#fff'; c.fill(); c.lineWidth=2/d; c.strokeStyle='#386A43'; c.stroke() }
+    c.restore();
+  }
+}
+
+/* ---------- panel ---------- */
+const eyedrop = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3z"/></svg>`;
+function rng(k,label,min,max,step,val,unit=''){
+  return `<label class="row"><span>${label}</span><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" value="${val}"><output data-o="${k}">${fmt(val,unit)}</output></label>`;
+}
+function fmt(v,u){ return (Math.round(v*10)/10)+u }
+function colorRow(k,label,val){
+  return `<div class="colorrow"><span class="l">${label}</span><input type="color" data-k="${k}" value="${val}" aria-label="${label}"><code data-o="${k}">${val}</code><button class="mini${S.pick===k?' on':''}" type="button" data-pick="${k}">${eyedrop}이미지에서 찍기</button></div>`;
+}
+const UNITS={skew:'°',size:'px',sx:'%',sy:'%',scale:'%',opacity:'%',ls:'%',lh:'%',rot:'°',stroke:'px',shBlur:'',shX:'',shY:'',tol:''};
+function val(L,k){ const v=L[k]; return PCT.has(k)?Math.round(v*100):v }
+
+function layerList(){
+  if(!S.layers.length) return '';
+  return `<div class="card"><h3>올려둔 조각</h3><ul class="layers">${S.layers.slice().reverse().map(L=>
+    `<li><button type="button" data-sel="${L.id}" aria-pressed="${L.id===S.sel}"><span class="tag">${L.type==='text'?'글자':'복사'}</span><span class="tx" ${L.type==='text'?`style="font-family:'${L.family}'"`:''}>${L.type==='text'?esc(L.text||' '):'이미지 조각'}</span></button></li>`).join('')}</ul></div>`;
+}
+function presetCard(L){
+  return `<div class="card"><h3>말풍선 스타일</h3><div class="presets">${PRESETS.map((p,i)=>
+    `<button type="button" class="preset" data-preset="${i}"><span style="font-family:'${p.f}',sans-serif;${p.n==='효과음'?'color:#D8342B;':''}${p.s.skew?`display:inline-block;transform:skewX(${p.s.skew}deg)`:''}">${p.n}</span></button>`).join('')}</div>
+    <p class="note" style="margin-top:8px">누르면 지금 글자에 바로 입혀지고, 다음에 쓰는 글자도 같은 스타일로 시작해요.</p></div>`;
+}
+function fontCard(L){
+  const pv=esc((L.text||'가나다').split('\n')[0].slice(0,10)||'가나다');
+  const all=[...FONTS,...MINE.map(m=>[m.fam,'mine'])];
+  const list=all.filter(([f,c])=>S.cat==='all'||(S.cat==='fav'?FAV.has(f):c===S.cat));
+  let empty='';
+  if(!list.length) empty = S.cat==='fav' ? '<p class="note">폰트 이름 옆 ☆를 누르면 여기 모여요.</p>' : S.cat==='mine' ? '<p class="note">컴퓨터에 있는 폰트 파일을 불러오면 여기 모여요.</p>' : '';
+  return `<div class="card"><h3>폰트 고르기</h3><p class="note">원본 겹쳐보기를 켜고 눌러가며 가장 닮은 걸 찾으세요.</p>
+    <div class="chips">${CATS.map(([k,n])=>`<button class="chip" type="button" data-cat="${k}" aria-pressed="${S.cat===k}">${n}</button>`).join('')}</div>
+    ${empty}<div class="fontlist">${list.map(([f,c])=>
+      `<div class="fi"><button class="font-item" type="button" data-family="${esc(f)}" aria-pressed="${L.family===f}"><span class="pv" style="font-family:'${esc(f)}',sans-serif;font-weight:${L.weight}">${pv}</span><span class="nm">${esc(c==='mine'?(MINE.find(m=>m.fam===f)||{}).label||f:f)}</span></button>${c==='mine'
+        ?`<button class="star" type="button" data-delfont="${esc(f)}" aria-label="내 폰트에서 지우기">✕</button>`
+        :`<button class="star${FAV.has(f)?' on':''}" type="button" data-star="${esc(f)}" aria-label="즐겨찾기" aria-pressed="${FAV.has(f)}">${FAV.has(f)?'★':'☆'}</button>`}</div>`).join('')}</div>
+    <div class="btnrow"><button class="mini" type="button" data-act="font">+ 내 폰트 불러오기 (.ttf .otf .woff)</button></div>
+    <p class="note" style="margin-top:6px">불러온 폰트는 이 브라우저에 저장돼서 다음에도 그대로 있어요.</p></div>`;
+}
+function renderPanel(){
+  if(!S.loaded){ panel.innerHTML=`<div class="card"><h3>이렇게 써요</h3><p class="note">AI가 그린 웹툰 컷, 포스터, 학습지에서 틀린 한글만 고쳐요. 말풍선 글자를 새로 넣기에도 좋아요. 원본 이미지는 다시 생성하지 않아서 다른 부분은 그대로 남아요.</p></div>`; return }
+  const L=selL(); let h='';
+  if(L && L.type==='text'){
+    h+=presetCard(L);
+    h+=`<div class="card"><h3>글자</h3><textarea data-k="text" aria-label="글자 내용">${esc(L.text)}</textarea>
+      <div class="colorrow"><span class="l">굵기</span><select data-k="weight" aria-label="굵기">${[300,400,500,700,800,900].map(w=>`<option value="${w}" ${+L.weight===w?'selected':''}>${{300:'가늘게',400:'보통',500:'중간',700:'굵게',800:'더 굵게',900:'가장 굵게'}[w]}</option>`).join('')}</select></div>
+      ${rng('size','크기',4,Math.max(400,Math.round(work.height/2)),.5,L.size,'px')}
+      ${rng('sx','가로 비율',40,200,1,val(L,'sx'),'%')}
+      ${rng('ls','자간',-30,80,1,L.ls,'%')}
+      ${L.text.includes('\n')?rng('lh','줄 간격',70,220,1,L.lh,'%'):''}
+      ${rng('skew','기울기',-30,30,1,L.skew||0,'°')}
+      ${rng('rot','회전',-180,180,.5,L.rot,'°')}
+      ${colorRow('color','글자 색',L.color)}
+      <details ${L.stroke>0||L.shBlur>0||L.shX||L.shY?'open':''}><summary>테두리와 그림자</summary>
+        ${rng('stroke','테두리',0,Math.max(20,Math.round(L.size/4)),.5,L.stroke,'px')}
+        ${colorRow('strokeColor','테두리 색',L.strokeColor)}
+        ${rng('shBlur','그림자 번짐',0,40,1,L.shBlur)}
+        ${rng('shX','가로 거리',-30,30,1,L.shX)}
+        ${rng('shY','세로 거리',-30,30,1,L.shY)}
+        ${colorRow('shColor','그림자 색',L.shColor)}
+      </details>
+      ${rng('opacity','투명도',10,100,1,val(L,'opacity'),'%')}
+      <div class="btnrow"><button class="mini" type="button" data-act="dup">복제</button><button class="mini danger" type="button" data-act="del">삭제</button></div></div>`;
+    h+=fontCard(L);
+  } else if(L && L.type==='stamp'){
+    h+=`<div class="card"><h3>복사한 조각</h3>
+      <label class="switch" style="margin-bottom:6px"><input type="checkbox" data-k="clear" ${L.clear?'checked':''}> 배경 지우고 글자만 남기기</label>
+      ${L.clear?rng('tol','지우는 정도',5,150,1,L.tol):''}
+      ${rng('scale','크기',10,400,1,val(L,'scale'),'%')}
+      ${rng('sx','가로 비율',30,250,1,val(L,'sx'),'%')}
+      ${rng('sy','세로 비율',30,250,1,val(L,'sy'),'%')}
+      ${rng('rot','회전',-180,180,.5,L.rot,'°')}
+      ${rng('opacity','투명도',10,100,1,val(L,'opacity'),'%')}
+      <p class="note" style="margin-top:8px">자모 하나만 필요하면 조각을 복제해 여러 개로 쓰세요. 글자 가장자리에 배경색이 남으면 지우는 정도를 올리세요.</p>
+      <div class="btnrow"><button class="mini" type="button" data-act="dup">복제</button><button class="mini danger" type="button" data-act="del">삭제</button></div></div>`;
+  } else if(S.tool==='erase'){
+    h+=`<div class="card"><h3>지우는 방법</h3><div class="radios">
+      <label><input type="radio" name="fm" data-fm="auto" ${S.fill.mode==='auto'?'checked':''}> 주변 배경으로 자연스럽게</label>
+      <label><input type="radio" name="fm" data-fm="color" ${S.fill.mode==='color'?'checked':''}> 한 가지 색으로 덮기</label></div>
+      ${S.fill.mode==='color'?`<div class="colorrow"><span class="l">덮을 색</span><input type="color" data-fill value="${S.fill.color}" aria-label="덮을 색"><code>${S.fill.color}</code><button class="mini${S.pick==='fillColor'?' on':''}" type="button" data-pick="fillColor">${eyedrop}이미지에서 찍기</button></div>`:''}
+      <div class="btnrow"><button class="mini" type="button" data-quick="#ffffff">말풍선 흰색으로 비우기</button><button class="mini" type="button" data-quick="#000000">검은 칸으로 덮기</button></div>
+      <p class="note" style="margin-top:8px">무늬가 있는 배경은 작은 네모로 여러 번 나눠 지우면 더 자연스러워요.</p></div>`;
+  } else if(S.tool==='stamp'){
+    h+=`<div class="card"><h3>원본과 똑같은 글씨체로</h3><p class="note">'목포'를 '목표'로 고칠 때, 이미지 다른 곳에 '표'나 'ㅍ', 'ㅛ'가 있다면 그 부분을 감싸 복사하세요. AI가 그린 글씨를 그대로 쓰니 가장 자연스러워요.</p></div>`;
+  } else if(S.tool==='text'){
+    h+=`<div class="card"><h3>새 글자 쓰기</h3><p class="note">이미지 안에 필요한 글자가 없을 때 쓰세요. 마지막에 쓴 폰트와 색을 기억해서 다음 글자에도 그대로 써요.</p></div>`;
+  } else {
+    h+=`<div class="card"><h3>순서</h3><p class="note">지우기로 틀린 글자를 메우고, 글자 복사나 글자 쓰기로 새 글자를 올린 다음, 원본 겹쳐보기로 위치와 크기를 맞춰요. 조각을 누르면 여기서 세부 설정을 바꿀 수 있어요.</p></div>`;
+  }
+  h+=layerList();
+  panel.innerHTML=h;
+}
+function syncPanel(){
+  const L=selL(); if(!L) return;
+  panel.querySelectorAll('[data-k]').forEach(el=>{
+    const k=el.dataset.k; if(el===document.activeElement||el.type==='checkbox') return;
+    if(k in L){ el.value=val(L,k) }
+  });
+  panel.querySelectorAll('[data-o]').forEach(el=>{ const k=el.dataset.o; if(k in L) el.textContent= el.tagName==='CODE'?L[k]:fmt(val(L,k),UNITS[k]||'') });
+}
+panel.addEventListener('input',e=>{
+  const el=e.target;
+  if(el.dataset.fill!==undefined){ S.fill.color=el.value; el.nextElementSibling.textContent=el.value; return }
+  const k=el.dataset.k; const L=selL(); if(!k||!L) return;
+  let v;
+  if(el.type==='checkbox') v=el.checked;
+  else if(el.type==='color'||k==='text') v=el.value;
+  else { v=parseFloat(el.value); if(PCT.has(k)) v/=100 }
+  L[k]=v; if(k==='size') S.presetBase=null;
+  if(L.type==='text' && k!=='text') S.lastText[k]=v;
+  if(L.type==='stamp' && (k==='tol'||k==='clear')){ processStamp(L); if(k==='clear'){renderPanel()} }
+  if(k==='text'){
+    const pv=(v||'가나다').split('\n')[0].slice(0,10)||'가나다';
+    panel.querySelectorAll('.font-item .pv').forEach(s=>s.textContent=pv);
+    const li=panel.querySelector(`[data-sel="${L.id}"] .tx`); if(li) li.textContent=v||' ';
+    loadFont(L);
+    const hasLh=!!panel.querySelector('[data-k="lh"]'); if(hasLh!==v.includes('\n')){ renderPanel(); const ta=panel.querySelector('textarea'); ta.focus(); ta.setSelectionRange(ta.value.length,ta.value.length) }
+  }
+  if(k==='weight'){ panel.querySelectorAll('.font-item .pv').forEach(s=>s.style.fontWeight=v); loadFont(L) }
+  syncPanel(); redraw();
+});
+panel.addEventListener('focusin',e=>{ if(e.target.dataset&&e.target.dataset.k&&selL()) pushUndo(false) });
+panel.addEventListener('pointerdown',e=>{ const b=e.target.closest('[data-family],[data-preset],[data-k]'); if(b&&selL()) pushUndo(false) });
+panel.addEventListener('change',e=>{
+  const fm=e.target.dataset.fm; if(fm){ S.fill.mode=fm; renderPanel() }
+});
+panel.addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.dataset.family){ const L=selL(); if(!L) return; L.family=b.dataset.family; S.lastText.family=L.family; loadFont(L);
+    panel.querySelectorAll('.font-item').forEach(x=>x.setAttribute('aria-pressed',x===b)); const li=panel.querySelector(`[data-sel="${L.id}"] .tx`); if(li) li.style.fontFamily=`'${L.family}'`; redraw(); return }
+  if(b.dataset.cat){ S.cat=b.dataset.cat; const st=panel.querySelector('.fontlist')?.scrollTop; renderPanel(); return }
+  if(b.dataset.pick){ S.pick = S.pick===b.dataset.pick?null:b.dataset.pick; setHint(); renderPanel(); return }
+  if(b.dataset.sel){ S.sel=+b.dataset.sel; if(S.tool!=='move') setTool('move'); else {renderPanel(); redraw()} return }
+  if(b.dataset.preset!==undefined){ applyPreset(PRESETS[+b.dataset.preset]); return }
+  if(b.dataset.star){ const f=b.dataset.star; FAV.has(f)?FAV.delete(f):FAV.add(f); saveFav(); renderPanel(); return }
+  if(b.dataset.delfont){ delFont(b.dataset.delfont); return }
+  if(b.dataset.quick){ S.fill.mode='color'; S.fill.color=b.dataset.quick; renderPanel(); toast('이제 감싸는 곳이 '+(b.dataset.quick==='#ffffff'?'흰색':'검은색')+'으로 덮여요.'); return }
+  if(b.dataset.act==='font'){ $('#fontFile').click(); return }
+  if(b.dataset.act==='dup') dupSel();
+  if(b.dataset.act==='del') removeSel();
+});
+
+function applyPreset(p){
+  const L=selL(); if(!L) return;
+  const base = S.presetBase && S.presetBase.id===L.id ? S.presetBase.size : L.size;
+  S.presetBase={id:L.id,size:base};
+  Object.assign(L,p.s); L.size=Math.round(base*p.k*2)/2;
+  L.stroke = p.stroke ? Math.round(L.size*p.stroke*2)/2 : 0;
+  Object.assign(S.lastText,p.s,{stroke:L.stroke});
+  loadFont(L); renderPanel(); redraw();
+}
+/* ---------- my fonts (IndexedDB) ---------- */
+function idb(){ return new Promise((res,rej)=>{ try{ const r=indexedDB.open('hangul-repair',1); r.onupgradeneeded=()=>r.result.createObjectStore('fonts',{keyPath:'fam'}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error) }catch(e){rej(e)} }) }
+async function idbDo(mode,fn){ try{ const db=await idb(); return await new Promise((res,rej)=>{ const tx=db.transaction('fonts',mode); const st=tx.objectStore('fonts'); const r=fn(st); tx.oncomplete=()=>res(r&&r.result); tx.onerror=()=>rej(tx.error) }) }catch(e){ return null } }
+async function registerFont(fam,label,buf){
+  const ff=new FontFace(fam,buf); await ff.load(); document.fonts.add(ff);
+  if(!MINE.find(m=>m.fam===fam)) MINE.push({fam,label});
+}
+async function loadMine(){
+  const rows=await idbDo('readonly',st=>st.getAll()); if(!rows) return;
+  for(const r of rows){ try{ await registerFont(r.fam,r.label,r.buf) }catch(e){} }
+  if(MINE.length) renderPanel();
+}
+$('#fontFile').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  const label=(f.name.replace(/\.[^.]+$/,'').replace(/['"\\<>;{}()]/g,'').trim()||'내 폰트').slice(0,40); const fam='내폰트 '+label;
+  try{
+    const buf=await f.arrayBuffer();
+    await registerFont(fam,label,buf.slice(0));
+    await idbDo('readwrite',st=>st.put({fam,label,buf}));
+    S.cat='mine'; const L=selL(); if(L&&L.type==='text'){ L.family=fam; S.lastText.family=fam }
+    renderPanel(); redraw(); toast(label+' 폰트를 불러왔어요.');
+  }catch(err){ toast('폰트 파일을 읽지 못했어요. ttf, otf, woff 파일인지 확인해 주세요.') }
+};
+async function delFont(fam){
+  const i=MINE.findIndex(m=>m.fam===fam); if(i<0) return;
+  MINE.splice(i,1); await idbDo('readwrite',st=>st.delete(fam));
+  S.layers.forEach(L=>{ if(L.family===fam) L.family='Nanum Gothic' }); if(S.lastText.family===fam) S.lastText.family='Nanum Gothic';
+  renderPanel(); redraw(); toast('내 폰트에서 지웠어요.');
+}
+loadMine();
+
+/* ---------- save ---------- */
+async function save(){
+  if(!S.loaded) return;
+  try{ await Promise.all(S.layers.filter(L=>L.type==='text').map(L=>document.fonts.load(fontStr(L),L.text||'가'))) }catch(e){}
+  const c=document.createElement('canvas'); c.width=work.width; c.height=work.height;
+  const x=c.getContext('2d'); x.drawImage(work,0,0); S.layers.forEach(L=>drawLayer(x,L));
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+  if(!blob){ toast('이미지를 만들지 못했어요. 다시 시도해 주세요.'); return }
+  const filename=`${S.name}_수선본.png`;
+  if(dl){
+    try{ await dl.save({filename,data:blob}); toast('저장했어요.'); return }
+    catch(err){
+      if(err&&err.code==='declined'){ toast('저장을 취소했어요.'); return }
+      if(err&&err.code==='rate_limited'){ toast('잠시 뒤 다시 눌러주세요.'); return }
+    }
+  }
+  if(save.url) URL.revokeObjectURL(save.url);
+  const url=save.url=URL.createObjectURL(blob);
+  if(!window.claude){ const a=document.createElement('a'); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); toast('저장했어요.'); return }
+  $('#modalImg').src=url; $('#modalDl').href=url; $('#modalDl').download=filename; $('#modal').hidden=false;
+}
+$('#btnSave').onclick=save;
+$('#modalClose').onclick=()=>{ $('#modal').hidden=true };
+$('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') $('#modal').hidden=true });
+
+window.addEventListener('resize',()=>redraw());
+renderPanel();
+})();
+</script>
+</body>
+</html>
